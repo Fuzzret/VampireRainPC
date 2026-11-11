@@ -1,0 +1,73 @@
+# XenonRecomp config for Vampire Rain
+# Paths are relative to this file (place it in work\ - the setup script does this).
+
+[main]
+file_path = "default_dec.xex"
+out_directory_path = "../recomp_out"
+switch_table_file_path = "switch_tables.toml"
+# patch_file_path = "default.xexp"   # only if you apply a title update patch
+
+# Optimizations - leave off until the first build compiles and runs.
+skip_lr = false
+skip_msr = false
+ctr_as_local = false
+xer_as_local = false
+reserved_as_local = false
+cr_as_local = false
+non_argument_as_local = false
+non_volatile_as_local = false
+
+# Compiler-generated register save/restore helpers and setjmp/longjmp.
+# Find these in IDA/Ghidra: __savegprlr_14 / __restgprlr_14 are runs of
+# "std r14..r31" / "ld r14..r31" ending in a branch; the FPR and VMX versions
+# look the same with stfd/lfd and stvx/lvx. Filled in from a signature scan of
+# default_dec.xex (each pattern matched exactly once; bodies verified).
+restgprlr_14_address = 0x8229ED30
+savegprlr_14_address = 0x8229ECE0
+restfpr_14_address   = 0x822A0A2C
+savefpr_14_address   = 0x822A09E0
+restvmx_14_address   = 0x822A1FD8
+savevmx_14_address   = 0x822A1D40
+restvmx_64_address   = 0x822A206C
+savevmx_64_address   = 0x822A1DD4
+longjmp_address      = 0x8250CF00
+setjmp_address       = 0x8250D020
+
+# Leaf functions with no .pdata entry that contain jump tables. XenonRecomp's
+# own analysis ends them at the jump-table branch ("Switch case ... is trying
+# to jump outside function"), so their real bounds are declared here. Functions
+# reached only through pointers inside those gaps are listed separately.
+functions = [
+    { address = 0x820E2350, size = 0xE8 },
+    { address = 0x820E2438, size = 0x234 },
+    { address = 0x82108C48, size = 0x7B0 },
+    { address = 0x821E55C0, size = 0x270 },
+    { address = 0x821E5830, size = 0x150 },
+    { address = 0x821E5980, size = 0x118 },
+    { address = 0x821F0F70, size = 0x2C },
+    { address = 0x821F0FA0, size = 0x4C },
+    { address = 0x821FD018, size = 0xD4 },
+    { address = 0x821FD0F0, size = 0xC4 },
+    { address = 0x82200738, size = 0x284 },
+    { address = 0x8223ACE8, size = 0xFC },
+    { address = 0x822FC200, size = 0x114 },
+    { address = 0x8234A0F0, size = 0x100 },
+    { address = 0x823AD5E8, size = 0x70 },
+    { address = 0x8241E830, size = 0x78 },
+    { address = 0x8246A708, size = 0x68 },
+    { address = 0x8246A770, size = 0x64 },
+    { address = 0x8246A7D8, size = 0x5C },
+    { address = 0x8246A838, size = 0x198 },
+    { address = 0x8246A9D0, size = 0x16C },
+    { address = 0x82480AB8, size = 0x130 },
+    { address = 0x82480BE8, size = 0x2C },
+    { address = 0x824844C8, size = 0x194 },
+    { address = 0x82485C98, size = 0x9C },
+    { address = 0x824B7948, size = 0x74 },
+    { address = 0x824D1BF0, size = 0x98 },
+    { address = 0x824FACA0, size = 0x2A8 },
+    { address = 0x82501A48, size = 0x268 },
+]
+
+# Hand-written replacements for instructions that need runtime hooks:
+# midasm_hook = [ ... ]
